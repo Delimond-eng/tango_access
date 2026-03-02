@@ -78,8 +78,8 @@ class _MemberPageState extends State<MemberPage> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.white.withOpacity(0.3)),
                       ),
-                      child: const KioskBrandHeader(
-                        subtitle: "Accès familles et travailleurs",
+                      child: KioskBrandHeader(
+                        subtitle: 'permanent_members'.tr,
                       ),
                     ),
                   ),
@@ -95,12 +95,12 @@ class _MemberPageState extends State<MemberPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Mes Membres", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Ubuntu')),
-                        Text("Famille et employés permanents", style: TextStyle(fontSize: 12, color: Colors.black54, fontFamily: 'Ubuntu')),
+                        Text('members'.tr, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Ubuntu')),
+                        Text('permanent_members'.tr, style: const TextStyle(fontSize: 12, color: Colors.black54, fontFamily: 'Ubuntu')),
                       ],
                     ),
                   ),
@@ -134,15 +134,9 @@ class _MemberPageState extends State<MemberPage> {
                         child: Icon(CupertinoIcons.group, size: 64, color: Colors.blue.shade300),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        "Aucun membre",
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Ubuntu', color: Colors.black87),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        "Ajoutez vos membres permanents\npour un accès illimité.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13, color: Colors.black54, fontFamily: 'Ubuntu', height: 1.4),
+                      Text(
+                        'none_visits'.tr,
+                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Ubuntu', color: Colors.black87),
                       ),
                     ],
                   ),
@@ -203,9 +197,9 @@ class _MemberPageState extends State<MemberPage> {
                   style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.black87, fontFamily: 'Ubuntu'),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  "Durée illimitée",
-                  style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Ubuntu'),
+                Text(
+                  'unlimited_duration'.tr,
+                  style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.w600, fontFamily: 'Ubuntu'),
                 ),
               ],
             ),
@@ -277,7 +271,7 @@ class _MemberPageState extends State<MemberPage> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -292,10 +286,9 @@ class _MemberPageState extends State<MemberPage> {
                 Container(width: 40, height: 5, margin: const EdgeInsets.only(bottom: 10), decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(5))),
                 _buildSheetAction(
                   icon: Icons.share_rounded,
-                  title: "Partager le QR Code",
-                  subtitle: "Envoyer l'accès permanent",
+                  title: 'share_qr'.tr,
                   onTap: () {
-                    Get.back();
+                    Navigator.pop(sheetContext);
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -309,11 +302,10 @@ class _MemberPageState extends State<MemberPage> {
                 const SizedBox(height: 12),
                 _buildSheetAction(
                   icon: Icons.delete_outline_rounded,
-                  title: "Supprimer le membre",
-                  subtitle: "Retirer l'accès définitivement",
+                  title: 'delete_member'.tr,
                   color: Colors.red,
                   onTap: () {
-                    Get.back();
+                    Navigator.pop(sheetContext);
                     _showDeleteConfirmation(data);
                   },
                 ),
@@ -363,7 +355,7 @@ class _MemberPageState extends State<MemberPage> {
               ),
               const SizedBox(height: 18),
               Text(
-                "Supprimer ?",
+                'delete_confirm_title'.tr,
                 style: TextStyle(
                   fontSize: 19 * scale,
                   fontWeight: FontWeight.w700,
@@ -373,7 +365,7 @@ class _MemberPageState extends State<MemberPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Voulez-vous vraiment retirer l'accès permanent à ${data.visitor?.name ?? 'ce membre'} ?",
+                "${'delete_confirm_desc'.tr} (${data.visitor?.name ?? '...'})",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13 * scale,
@@ -388,9 +380,9 @@ class _MemberPageState extends State<MemberPage> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text(
-                        "Annuler",
-                        style: TextStyle(
+                      child: Text(
+                        'cancel'.tr,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Ubuntu',
@@ -401,14 +393,16 @@ class _MemberPageState extends State<MemberPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Get.back();
                         EasyLoading.show(status: "Suppression...");
-                        ApiManager().deleteData(table: "visitors", id: data.visitorId!).then((res) {
-                          EasyLoading.dismiss();
+                        try {
+                          await ApiManager().deleteData(table: "visitors", id: data.visitorId!);
                           dataController.refreshMember();
                           EasyLoading.showSuccess("Membre retiré");
-                        });
+                        } finally {
+                          EasyLoading.dismiss();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -419,9 +413,9 @@ class _MemberPageState extends State<MemberPage> {
                           borderRadius: BorderRadius.circular(14 * scale),
                         ),
                       ),
-                      child: const Text(
-                        "Retirer",
-                        style: TextStyle(
+                      child: Text(
+                        'delete'.tr,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontFamily: 'Ubuntu',
                         ),
@@ -477,7 +471,7 @@ class _MemberPageState extends State<MemberPage> {
               ),
               const SizedBox(height: 18),
               Text(
-                "Déconnexion",
+                'logout_confirm_title'.tr,
                 style: TextStyle(
                   fontSize: 19 * scale,
                   fontWeight: FontWeight.w700,
@@ -487,7 +481,7 @@ class _MemberPageState extends State<MemberPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Voulez-vous vraiment fermer votre session ?",
+                'logout_confirm_desc'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13 * scale,
@@ -502,9 +496,9 @@ class _MemberPageState extends State<MemberPage> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text(
-                        "Annuler",
-                        style: TextStyle(
+                      child: Text(
+                        'cancel'.tr,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Ubuntu',
@@ -530,9 +524,9 @@ class _MemberPageState extends State<MemberPage> {
                           borderRadius: BorderRadius.circular(14 * scale),
                         ),
                       ),
-                      child: const Text(
-                        "Déconnexion",
-                        style: TextStyle(
+                      child: Text(
+                        'logout'.tr,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontFamily: 'Ubuntu',
                         ),
@@ -602,13 +596,13 @@ class _MemberPageState extends State<MemberPage> {
                       style: TextStyle(color: secondary, fontWeight: FontWeight.bold)
                     )
                   ),
-                  title: Text("Bonjour, ${authController.user.value!.nom}", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Ubuntu', fontSize: 18)),
+                  title: Text("${'hello'.tr}, ${authController.user.value!.nom}", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Ubuntu', fontSize: 18)),
                   subtitle: Text(authController.user.value!.email, style: const TextStyle(fontFamily: 'Ubuntu')),
                 ),
                 const Divider(height: 32),
-                _buildSheetAction(icon: Icons.history, title: "Historique", subtitle: "Consulter vos passages passés", onTap: () { Get.back(); Get.to(() => const HistoryPage(), transition: Transition.cupertino); }),
+                _buildSheetAction(icon: Icons.history, title: 'history'.tr, subtitle: 'all_validated_visits'.tr, onTap: () { Get.back(); Get.to(() => const HistoryPage(), transition: Transition.cupertino); }),
                 const SizedBox(height: 12),
-                _buildSheetAction(icon: Icons.logout, title: "Déconnexion", subtitle: "Fermer votre session actuelle", color: Colors.red, onTap: _showLogoutConfirmation),
+                _buildSheetAction(icon: Icons.logout, title: 'logout'.tr, subtitle: 'logout_confirm_desc'.tr, color: Colors.red, onTap: _showLogoutConfirmation),
               ],
             ),
           ),
