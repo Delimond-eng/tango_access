@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../models/history.dart';
 import '../theme/style.dart';
 
@@ -51,7 +52,7 @@ class HistoryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Visite le : ${data.createdAt}",
+                  "${'visited_on'.tr} : ${data.createdAt}",
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 12,
@@ -69,9 +70,9 @@ class HistoryCard extends StatelessWidget {
               color: Colors.green.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text(
-              "Validé",
-              style: TextStyle(
+            child: Text(
+              'validated'.tr,
+              style: const TextStyle(
                 color: Colors.green,
                 fontSize: 10,
                 fontWeight: FontWeight.bold,

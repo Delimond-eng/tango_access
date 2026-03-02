@@ -43,6 +43,8 @@ class AppTranslations extends Translations {
       'unlimited_duration': 'Durée illimitée',
       'delete_member': 'Supprimer le membre',
       'remove_access_permanently': "Retirer l'accès définitivement",
+      'validated': 'Validé',
+      'visited_on': 'Visité le',
     },
     'en': {
       'new_visitor': 'New Visitor',
@@ -84,6 +86,8 @@ class AppTranslations extends Translations {
       'unlimited_duration': 'Unlimited duration',
       'delete_member': 'Delete member',
       'remove_access_permanently': 'Remove access permanently',
+      'validated': 'Validated',
+      'visited_on': 'Visited on',
     }
   };
 }
