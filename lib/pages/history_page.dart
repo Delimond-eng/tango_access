@@ -239,7 +239,7 @@ class _HistoryPageState extends State<HistoryPage> {
             _buildNavIcon(Icons.home_rounded, false, () => Get.offAll(() => const MainScreen(), transition: Transition.cupertino)),
             _buildNavIcon(Icons.group_rounded, false, () => Get.to(() => const MemberPage(), transition: Transition.cupertino)),
             _buildNavIcon(Icons.history_rounded, true, () => loadData(page: 1)),
-            _buildNavIcon(CupertinoIcons.square_grid_2x2_fill, false, () => showProfile()),
+            _buildNavIcon(CupertinoIcons.square_grid_2x2, false, () => showProfile()),
           ],
         ),
       ),

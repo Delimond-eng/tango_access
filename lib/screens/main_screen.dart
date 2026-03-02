@@ -388,7 +388,7 @@ class _MainScreenState extends State<MainScreen> {
             _buildNavIcon(Icons.home_rounded, true, () => dataController.refreshPendingData()),
             _buildNavIcon(Icons.group_rounded, false, () => Get.to(() => const MemberPage(), transition: Transition.cupertino)),
             _buildNavIcon(Icons.history_rounded, false, () => Get.to(() => const HistoryPage(), transition: Transition.cupertino)),
-            _buildNavIcon(CupertinoIcons.square_grid_2x2_fill, false, () => showProfile()),
+            _buildNavIcon(CupertinoIcons.square_grid_2x2, false, () => showProfile()),
           ],
         ),
       ),
