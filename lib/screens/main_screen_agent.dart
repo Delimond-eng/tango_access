@@ -65,13 +65,12 @@ class _MainScreenAgentState extends State<MainScreenAgent> with WidgetsBindingOb
   // Étape 1 : Vérification des infos sans consommer le QR
   Future<void> processScan(String token) async {
     dataController.isScanned.value = true;
-    controller!.pauseCamera(); // On arrête immédiatement le scanner
+    controller?.pauseCamera();
     
-    var api = ApiManager();
     EasyLoading.show(status: "Vérification du code...");
     
-    api.getScanInfos(token: token).then((res) {
-      EasyLoading.dismiss();
+    try {
+      final res = await ApiManager().getScanInfos(token: token);
       
       if (res is Map && res.containsKey("qrcode")) {
         bool expired = res["status"] != "accepted";
@@ -88,25 +87,33 @@ class _MainScreenAgentState extends State<MainScreenAgent> with WidgetsBindingOb
       } else {
         dataController.isScanned.value = false;
         EasyLoading.showInfo(res is String ? res : "QR code invalide");
+        controller?.resumeCamera();
       }
-    });
+    } catch (e) {
+      dataController.isScanned.value = false;
+      EasyLoading.showError("Erreur de connexion réseau");
+      controller?.resumeCamera();
+    } finally {
+      EasyLoading.dismiss();
+    }
   }
 
   // Étape 2 : Validation finale et consommation du QR
   Future<void> validateAccess(String token) async {
-    var api = ApiManager();
     EasyLoading.show(status: "Accord de l'accès...");
     
-    var res = await api.scanQrcode(token: token);
-    EasyLoading.dismiss();
-    
-    if (res is String) {
-      EasyLoading.showError(res);
-    } else {
-      EasyLoading.showSuccess("Accès autorisé avec succès");
+    try {
+      var res = await ApiManager().scanQrcode(token: token);
+      if (res is String) {
+        EasyLoading.showError(res);
+      } else {
+        EasyLoading.showSuccess("Accès autorisé avec succès");
+      }
+    } catch (e) {
+      EasyLoading.showError("Échec de la validation (réseau)");
+    } finally {
+      EasyLoading.dismiss();
     }
-    
-    // Le scanner reste en pause, l'agent doit cliquer sur Refresh
   }
 
   void _showErrorModal(String message) {
@@ -953,6 +960,53 @@ class _ScanInfoTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ScannerControl extends StatelessWidget {
+  const ScannerControl({super.key, required this.icon, required this.onTap, this.isPrimary = false});
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isPrimary;
+
+  @override
+  Widget build(BuildContext context) {
+    final scale = kioskScale(context);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(22 * scale),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              padding: EdgeInsets.all(16 * scale),
+              decoration: BoxDecoration(
+                color: isPrimary ? Colors.amber.withOpacity(0.25) : Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(22 * scale),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,
+                size: 28 * scale,
+                color: isPrimary ? Colors.amber.shade100 : Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

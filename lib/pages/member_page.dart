@@ -314,18 +314,123 @@ class _MemberPageState extends State<MemberPage> {
                   color: Colors.red,
                   onTap: () {
                     Get.back();
-                    showConfirmDialog(context: context, title: "Supprimer ?", message: "Voulez-vous retirer l'accès à ce membre ?").then((confirmed) {
-                      if (confirmed == true) {
-                        ApiManager().deleteData(table: "visitors", id: data.visitorId!).then((res) {
-                          dataController.refreshMember();
-                          EasyLoading.showSuccess("Membre retiré");
-                        });
-                      }
-                    });
+                    _showDeleteConfirmation(data);
                   },
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(Qrcode data) {
+    final scale = kioskScale(context);
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28 * scale),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56 * scale,
+                height: 56 * scale,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.red,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                "Supprimer ?",
+                style: TextStyle(
+                  fontSize: 19 * scale,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                  fontFamily: 'Ubuntu',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Voulez-vous vraiment retirer l'accès permanent à ${data.visitor?.name ?? 'ce membre'} ?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13 * scale,
+                  color: Colors.grey.shade600,
+                  fontFamily: 'Ubuntu',
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      child: const Text(
+                        "Annuler",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Ubuntu',
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        EasyLoading.show(status: "Suppression...");
+                        ApiManager().deleteData(table: "visitors", id: data.visitorId!).then((res) {
+                          EasyLoading.dismiss();
+                          dataController.refreshMember();
+                          EasyLoading.showSuccess("Membre retiré");
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14 * scale),
+                        ),
+                      ),
+                      child: const Text(
+                        "Retirer",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Ubuntu',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -474,7 +579,7 @@ class _MemberPageState extends State<MemberPage> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),

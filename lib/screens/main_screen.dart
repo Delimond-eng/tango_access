@@ -488,7 +488,9 @@ class _MainScreenState extends State<MainScreen> {
                     Navigator.pop(sheetContext); // On ferme la modale d'abord
                     final dateTime = await pickDateAndTime(context); // On utilise le contexte de la page
                     if (dateTime != null) {
+                      EasyLoading.show(status: "Actualisation...");
                       ApiManager().refreshQr(token: data.token!, dateTime: dateTime).then((res) {
+                        EasyLoading.dismiss();
                         if (res is String) EasyLoading.showInfo(res);
                         else EasyLoading.showSuccess("QR actualisé");
                       });
@@ -520,18 +522,123 @@ class _MainScreenState extends State<MainScreen> {
                   color: Colors.red,
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    showConfirmDialog(context: context, title: "Supprimer ?", message: "Voulez-vous supprimer cet accès ?").then((confirmed) {
-                      if (confirmed == true) {
-                        ApiManager().deleteData(table: "visitors", id: data.visitorId!).then((res) {
-                          dataController.refreshPendingData();
-                          EasyLoading.showSuccess("Supprimé");
-                        });
-                      }
-                    });
+                    _showDeleteConfirmation(data);
                   },
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(Qrcode data) {
+    final scale = kioskScale(context);
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28 * scale),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56 * scale,
+                height: 56 * scale,
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.red,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                "Supprimer ?",
+                style: TextStyle(
+                  fontSize: 19 * scale,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                  fontFamily: 'Ubuntu',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Voulez-vous vraiment supprimer cet accès pour ${data.visitor?.name ?? 'ce visiteur'} ?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13 * scale,
+                  color: Colors.grey.shade600,
+                  fontFamily: 'Ubuntu',
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      child: const Text(
+                        "Annuler",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Ubuntu',
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        EasyLoading.show(status: "Suppression...");
+                        ApiManager().deleteData(table: "visitors", id: data.visitorId!).then((res) {
+                          EasyLoading.dismiss();
+                          dataController.refreshPendingData();
+                          EasyLoading.showSuccess("Supprimé");
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14 * scale),
+                        ),
+                      ),
+                      child: const Text(
+                        "Supprimer",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Ubuntu',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
