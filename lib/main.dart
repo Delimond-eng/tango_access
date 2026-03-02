@@ -7,6 +7,7 @@ import 'package:taxenew/controllers/data_controller.dart';
 import 'package:taxenew/screens/main_screen.dart';
 import 'package:taxenew/screens/main_screen_agent.dart';
 import 'package:taxenew/utils/controllers.dart';
+import 'package:taxenew/utils/translations.dart';
 import '/screens/auth/login.dart';
 import '/theme/style.dart';
 import 'controllers/auth_controller.dart';
@@ -24,8 +25,7 @@ void configEasyLoading() {
   EasyLoading.instance
     ..displayDuration = const Duration(milliseconds: 2000)
     ..loadingStyle = EasyLoadingStyle.custom
-    ..radius =
-        5.0 // Définissez ici le radius
+    ..radius = 5.0
     ..backgroundColor = Colors.black54
     ..textColor = Colors.white
     ..indicatorColor = Colors.white
@@ -43,10 +43,12 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late final Future<Widget> _startupFuture;
+  final storage = GetStorage();
+
   @override
   void initState() {
     super.initState();
-    _startupFuture = _initApp(); // ← créé UNE fois
+    _startupFuture = _initApp();
   }
 
   Future<Widget> _initApp() async {
@@ -69,10 +71,17 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Récupérer la langue sauvegardée ou utiliser 'fr' par défaut
+    String savedLang = storage.read('lang') ?? 'fr';
+    Locale initialLocale = Locale(savedLang);
+
     return GetMaterialApp(
-      title: 'Salama Gate',
+      title: 'Tango Access',
       debugShowCheckedModeBanner: false,
       builder: EasyLoading.init(),
+      translations: AppTranslations(),
+      locale: initialLocale,
+      fallbackLocale: const Locale('fr'),
       theme: ThemeData(
         primaryColor: Colors.blue,
         primarySwatch: Colors.blue,
@@ -80,7 +89,7 @@ class _MyAppState extends State<MyApp> {
         fontFamily: 'Ubuntu',
       ),
       home: FutureBuilder<Widget>(
-        future: _startupFuture, // ← réutilisé
+        future: _startupFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Scaffold(

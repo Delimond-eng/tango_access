@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:taxenew/services/api_manager.dart';
 import 'package:taxenew/utils/controllers.dart';
@@ -65,7 +66,7 @@ class _MainScreenState extends State<MainScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
-      builder: (sheetContext) => StatefulBuilder( // Renommé context en sheetContext
+      builder: (sheetContext) => StatefulBuilder(
         builder: (context, setInternalState) => Container(
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -93,30 +94,30 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                   Text(
-                    type == 'visitor' ? "Nouveau Visiteur" : "Nouveau Membre",
+                    type == 'visitor' ? 'new_visitor'.tr : 'new_member'.tr,
                     style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Ubuntu'),
                   ),
                   const SizedBox(height: 20),
                   CustomField(
                     controller: nomController,
-                    hintText: "Nom complet",
+                    hintText: 'full_name'.tr,
                     iconPath: 'user-1',
                   ),
                   CustomField(
                     controller: phoneController,
-                    hintText: "Téléphone",
+                    hintText: 'phone'.tr,
                     inputType: TextInputType.phone,
                     iconPath: 'phone-2',
                   ),
                   CustomField(
                     controller: emailController,
-                    hintText: "Email (Optionnel)",
+                    hintText: 'email_optional'.tr,
                     inputType: TextInputType.emailAddress,
                     iconPath: 'email',
                   ),
                   if (type == "visitor")
                     CustomDateTimeField(
-                      hintText: "Date & heure de visite",
+                      hintText: 'visit_date_time'.tr,
                       iconPath: "calendar-time",
                       selectedDateTime: selectedDate,
                       onChanged: (DateTime dt) {
@@ -158,7 +159,7 @@ class _MainScreenState extends State<MainScreen> {
                           EasyLoading.showInfo(res);
                         } else {
                           if (!mounted) return;
-                          Navigator.pop(sheetContext); // Utilisation de sheetContext
+                          Navigator.pop(sheetContext);
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
@@ -176,7 +177,7 @@ class _MainScreenState extends State<MainScreen> {
                       },
                       child: dataController.isLoading.value
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Générer l'accès QR", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        : Text('generate_qr'.tr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                   )),
                 ],
@@ -247,7 +248,7 @@ class _MainScreenState extends State<MainScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: Colors.white.withOpacity(0.3)),
                           ),
-                          child: const KioskBrandHeader(subtitle: "Terminal pour résident"),
+                          child: KioskBrandHeader(subtitle: 'terminal_resident'.tr),
                         ),
                       ),
                     ),
@@ -286,8 +287,8 @@ class _MainScreenState extends State<MainScreen> {
                                     children: [
                                       _buildActionCard(
                                         context,
-                                        title: "Créer\nVisiteur",
-                                        subtitle: "Mes visiteurs",
+                                        title: 'create_visitor'.tr,
+                                        subtitle: 'my_visitors'.tr,
                                         color: Colors.amber.shade400,
                                         icon: Icons.person_add_rounded,
                                         onTap: () => _showCreationBottomSheet("visitor"),
@@ -295,8 +296,8 @@ class _MainScreenState extends State<MainScreen> {
                                       const SizedBox(width: 15),
                                       _buildActionCard(
                                         context,
-                                        title: "Créer\nMembre",
-                                        subtitle: "Famille & Employés",
+                                        title: 'create_member'.tr,
+                                        subtitle: 'family_employees'.tr,
                                         color: Colors.white.withOpacity(0.9),
                                         icon: Icons.group_add_rounded,
                                         onTap: () => _showCreationBottomSheet("worker"),
@@ -321,12 +322,12 @@ class _MainScreenState extends State<MainScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Mes Visites", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Ubuntu')),
-                          Text("Passages programmés en attente", style: TextStyle(fontSize: 12, color: Colors.black54, fontFamily: 'Ubuntu')),
+                          Text('my_visits'.tr, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Ubuntu')),
+                          Text('pending_visits'.tr, style: const TextStyle(fontSize: 12, color: Colors.black54, fontFamily: 'Ubuntu')),
                         ],
                       ),
                     ),
@@ -344,7 +345,7 @@ class _MainScreenState extends State<MainScreen> {
                 return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
               }
               if (dataController.pendingVisits.isEmpty) {
-                return const SliverFillRemaining(child: Center(child: Text("-- Aucune visite --", style: TextStyle(fontFamily: 'Ubuntu'))));
+                return SliverFillRemaining(child: Center(child: Text('none_visits'.tr, style: const TextStyle(fontFamily: 'Ubuntu'))));
               }
               return SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
@@ -467,7 +468,7 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (sheetContext) => Container( // Renommé context en sheetContext
+      builder: (sheetContext) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -482,26 +483,26 @@ class _MainScreenState extends State<MainScreen> {
                 Container(width: 40, height: 5, margin: const EdgeInsets.only(bottom: 10), decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(5))),
                 _buildSheetAction(
                   icon: Icons.refresh_rounded,
-                  title: "Ré-actualiser le QR Code",
-                  subtitle: "Changer la date de validité",
+                  title: 'refresh_qr'.tr,
                   onTap: () async {
-                    Navigator.pop(sheetContext); // On ferme la modale d'abord
-                    final dateTime = await pickDateAndTime(context); // On utilise le contexte de la page
+                    Navigator.pop(sheetContext);
+                    final dateTime = await pickDateAndTime(context);
                     if (dateTime != null) {
                       EasyLoading.show(status: "Actualisation...");
-                      ApiManager().refreshQr(token: data.token!, dateTime: dateTime).then((res) {
-                        EasyLoading.dismiss();
+                      try {
+                        final res = await ApiManager().refreshQr(token: data.token!, dateTime: dateTime);
                         if (res is String) EasyLoading.showInfo(res);
                         else EasyLoading.showSuccess("QR actualisé");
-                      });
+                      } finally {
+                        EasyLoading.dismiss();
+                      }
                     }
                   },
                 ),
                 const SizedBox(height: 12),
                 _buildSheetAction(
                   icon: Icons.share_rounded,
-                  title: "Partager le QR Code",
-                  subtitle: "Envoyer l'accès au visiteur",
+                  title: 'share_qr'.tr,
                   onTap: () {
                     Navigator.pop(sheetContext);
                     showModalBottomSheet(
@@ -517,8 +518,7 @@ class _MainScreenState extends State<MainScreen> {
                 const SizedBox(height: 12),
                 _buildSheetAction(
                   icon: Icons.delete_outline_rounded,
-                  title: "Supprimer la visite",
-                  subtitle: "Annuler cet accès définitivement",
+                  title: 'delete_visit'.tr,
                   color: Colors.red,
                   onTap: () {
                     Navigator.pop(sheetContext);
@@ -571,7 +571,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 18),
               Text(
-                "Supprimer ?",
+                'delete_confirm_title'.tr,
                 style: TextStyle(
                   fontSize: 19 * scale,
                   fontWeight: FontWeight.w700,
@@ -581,7 +581,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Voulez-vous vraiment supprimer cet accès pour ${data.visitor?.name ?? 'ce visiteur'} ?",
+                'delete_confirm_desc'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13 * scale,
@@ -596,9 +596,9 @@ class _MainScreenState extends State<MainScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text(
-                        "Annuler",
-                        style: TextStyle(
+                      child: Text(
+                        'cancel'.tr,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Ubuntu',
@@ -609,14 +609,16 @@ class _MainScreenState extends State<MainScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Get.back();
                         EasyLoading.show(status: "Suppression...");
-                        ApiManager().deleteData(table: "visitors", id: data.visitorId!).then((res) {
-                          EasyLoading.dismiss();
+                        try {
+                          await ApiManager().deleteData(table: "visitors", id: data.visitorId!);
                           dataController.refreshPendingData();
                           EasyLoading.showSuccess("Supprimé");
-                        });
+                        } finally {
+                          EasyLoading.dismiss();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -627,9 +629,9 @@ class _MainScreenState extends State<MainScreen> {
                           borderRadius: BorderRadius.circular(14 * scale),
                         ),
                       ),
-                      child: const Text(
-                        "Supprimer",
-                        style: TextStyle(
+                      child: Text(
+                        'delete'.tr,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontFamily: 'Ubuntu',
                         ),
@@ -686,7 +688,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 18),
               Text(
-                "Déconnexion",
+                'logout_confirm_title'.tr,
                 style: TextStyle(
                   fontSize: 19 * scale,
                   fontWeight: FontWeight.w700,
@@ -696,7 +698,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Voulez-vous vraiment fermer votre session ?",
+                'logout_confirm_desc'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13 * scale,
@@ -711,9 +713,9 @@ class _MainScreenState extends State<MainScreen> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text(
-                        "Annuler",
-                        style: TextStyle(
+                      child: Text(
+                        'cancel'.tr,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Ubuntu',
@@ -739,9 +741,9 @@ class _MainScreenState extends State<MainScreen> {
                           borderRadius: BorderRadius.circular(14 * scale),
                         ),
                       ),
-                      child: const Text(
-                        "Déconnexion",
-                        style: TextStyle(
+                      child: Text(
+                        'logout'.tr,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontFamily: 'Ubuntu',
                         ),
@@ -752,6 +754,60 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    final scale = kioskScale(context);
+    final storage = GetStorage();
+    String currentLang = storage.read('lang') ?? 'fr';
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28 * scale),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('select_language'.tr, style: kioskSubtitle(context)),
+              const SizedBox(height: 20),
+              _buildLanguageOption("fr", 'french'.tr, currentLang == "fr"),
+              const SizedBox(height: 12),
+              _buildLanguageOption("en", 'english'.tr, currentLang == "en"),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String code, String label, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        Get.updateLocale(Locale(code));
+        GetStorage().write('lang', code);
+        Get.back();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? secondary.withOpacity(0.1) : Colors.grey.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? secondary : Colors.transparent),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontFamily: 'Ubuntu')),
+            if (isSelected) const Icon(Icons.check_circle, color: Colors.indigo, size: 20),
+          ],
         ),
       ),
     );
@@ -811,16 +867,17 @@ class _MainScreenState extends State<MainScreen> {
                       style: TextStyle(color: secondary, fontWeight: FontWeight.bold)
                     )
                   ),
-                  title: Text("Bonjour, ${authController.user.value!.nom}", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Ubuntu', fontSize: 18)),
+                  title: Text("${'hello'.tr}, ${authController.user.value!.nom}", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Ubuntu', fontSize: 18)),
                   subtitle: Text(authController.user.value!.email, style: const TextStyle(fontFamily: 'Ubuntu')),
                 ),
                 const Divider(height: 32),
-                _buildSheetAction(icon: Icons.history, title: "Historique", subtitle: "Consulter vos passages passés", onTap: () { Navigator.pop(sheetContext); Get.to(() => const HistoryPage(), transition: Transition.cupertino); }),
+                _buildSheetAction(icon: Icons.language_rounded, title: 'language'.tr, subtitle: "Change app language", onTap: () { Navigator.pop(sheetContext); _showLanguageDialog(); }),
                 const SizedBox(height: 12),
-                _buildSheetAction(icon: Icons.group, title: "Mes membres", subtitle: "Gérer famille et employés", onTap: () { Navigator.pop(sheetContext); Get.to(() => const MemberPage(), transition: Transition.cupertino); }),
+                _buildSheetAction(icon: Icons.history, title: 'history'.tr, subtitle: 'all_validated_visits'.tr, onTap: () { Navigator.pop(sheetContext); Get.to(() => const HistoryPage(), transition: Transition.cupertino); }),
                 const SizedBox(height: 12),
-                _buildSheetAction(icon: Icons.logout, title: "Déconnexion", subtitle: "Fermer votre session actuelle", color: Colors.red, onTap: _showLogoutConfirmation
-                ),
+                _buildSheetAction(icon: Icons.group, title: 'members'.tr, subtitle: 'permanent_members'.tr, onTap: () { Navigator.pop(sheetContext); Get.to(() => const MemberPage(), transition: Transition.cupertino); }),
+                const SizedBox(height: 12),
+                _buildSheetAction(icon: Icons.logout, title: 'logout'.tr, subtitle: 'logout_confirm_desc'.tr, color: Colors.red, onTap: _showLogoutConfirmation),
               ],
             ),
           ),
@@ -836,16 +893,12 @@ class _MainScreenState extends State<MainScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2100)
     );
-    
     if (pickedDate == null || !mounted) return null;
-
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now()
     );
-    
     if (pickedTime == null || !mounted) return null;
-
     return DateFormat('yyyy-MM-dd HH:mm').format(
       DateTime(pickedDate.year, pickedDate.month, pickedDate.day, pickedTime.hour, pickedTime.minute)
     );
