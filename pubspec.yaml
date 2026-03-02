@@ -1,0 +1,81 @@
+name: taxenew
+description: "A new Flutter project."
+publish_to: 'none' 
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  flutter_svg: ^2.0.9
+  flutter_easyloading: ^3.0.5
+  barcode: ^2.2.4
+  lottie: ^2.7.0
+  qr_flutter: ^4.1.0
+  get: ^4.7.2
+  http: ^1.5.0
+  get_storage: ^2.1.1
+  image_picker: ^1.2.0
+  intl: ^0.18.1
+  easy_date_timeline: ^1.0.3
+  share_plus: ^7.2.1
+  path_provider: ^2.1.5
+  qr_code_scanner_plus: ^2.0.14
+  mobile_scanner:
+  #flutter_launcher_icons: ^0.14.3
+  #flutter_native_splash: ^2.4.4
+
+  
+dependency_overrides:
+  image: 3.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/anims/
+    - assets/images/
+    - assets/icons/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins/Poppins-Black.ttf
+        - asset: assets/fonts/Poppins/Poppins-BlackItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Bold.ttf
+        - asset: assets/fonts/Poppins/Poppins-BoldItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraBold.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraBoldItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraLight.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraLightItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Italic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Light.ttf
+        - asset: assets/fonts/Poppins/Poppins-LightItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Medium.ttf
+        - asset: assets/fonts/Poppins/Poppins-MediumItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins/Poppins-SemiBold.ttf
+        - asset: assets/fonts/Poppins/Poppins-SemiBoldItalic.ttf
+        - asset: assets/fonts/Poppins/Poppins-Thin.ttf
+        - asset: assets/fonts/Poppins/Poppins-ThinItalic.ttf
+    - family: Ubuntu
+      fonts:
+        - asset: assets/fonts/Ubuntu/Ubuntu-Bold.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-BoldItalic.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Italic.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Light.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-LightItalic.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Medium.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-MediumItalic.ttf
+        - asset: assets/fonts/Ubuntu/Ubuntu-Regular.ttf
+    - family: Staatliches
+      fonts:
+        - asset: assets/fonts/Staatliches/Staatliches-Regular.ttf

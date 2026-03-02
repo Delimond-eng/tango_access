@@ -1,0 +1,8 @@
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/tango.png
+  branding: assets/images/branding_text.png
+  android: true
+  fullscreen: false
+
+  #dart run flutter_native_splash:create
