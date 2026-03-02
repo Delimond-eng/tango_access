@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../models/qrcode.dart';
 import '../theme/style.dart';
 
@@ -53,7 +54,7 @@ class VisitorCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  "Expire : ${data.validTo}",
+                  "${'expires_at'.tr} : ${data.validTo}",
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 12,

@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -10,7 +11,7 @@ import 'package:taxenew/utils/app_theme.dart';
 
 class QrcodeBottomSheet extends StatelessWidget {
   final String qrData; // url ou token
-  final String visitorName; // url ou token
+  final String visitorName; 
 
   const QrcodeBottomSheet({
     super.key,
@@ -37,7 +38,7 @@ class QrcodeBottomSheet extends StatelessWidget {
 
         await Share.shareXFiles([
           XFile(file.path),
-        ], text: 'Voici mon QR Code de visite');
+        ], text: 'my_qr_share_text'.tr);
       } catch (e) {
         print("Erreur partage QR: $e");
       }
@@ -64,13 +65,15 @@ class QrcodeBottomSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
-            const Text(
-              "Veuillez Partager le qrcode généré.",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              "please_share_qr".tr,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
-            const Text(
-              "La validité du QR code est limitée à la durée spécifiée.",
-              style: TextStyle(fontSize: 10),
+            Text(
+              "qr_validity_note".tr,
+              style: const TextStyle(fontSize: 10),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             RepaintBoundary(

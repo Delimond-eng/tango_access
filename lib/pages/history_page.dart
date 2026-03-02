@@ -13,6 +13,7 @@ import 'package:taxenew/widgets/svg.dart';
 import '../components/kiosk_components.dart';
 import '../screens/auth/login.dart';
 import '../screens/main_screen.dart';
+import '../screens/main_screen_agent.dart';
 import 'member_page.dart';
 import '../utils/store.dart';
 
@@ -80,11 +81,21 @@ class _HistoryPageState extends State<HistoryPage> {
     final bgScaffold = Colors.indigo.shade50;
     final bgHeader = Colors.indigo.shade400;
     final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isAgent = authController.user.value?.role == 'agent';
 
     return Scaffold(
       backgroundColor: bgScaffold,
       extendBody: true,
-      bottomNavigationBar: _buildFloatingBottomBar(),
+      // Affiche la barre uniquement pour les résidents
+      bottomNavigationBar: isAgent ? null : _buildFloatingBottomBar(),
+      // Affiche un bouton de retour uniquement pour les agents
+      floatingActionButton: isAgent 
+        ? FloatingActionButton(
+            onPressed: () => Get.offAll(() => const MainScreenAgent(), transition: Transition.cupertino),
+            backgroundColor: secondary,
+            child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          )
+        : null,
       body: CustomScrollView(
         controller: _scrollController,
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -179,7 +190,7 @@ class _HistoryPageState extends State<HistoryPage> {
               );
             }
             return SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+              padding: EdgeInsets.fromLTRB(20, 0, 20, isAgent ? 20 : 100),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -228,7 +239,7 @@ class _HistoryPageState extends State<HistoryPage> {
             _buildNavIcon(Icons.home_rounded, false, () => Get.offAll(() => const MainScreen(), transition: Transition.cupertino)),
             _buildNavIcon(Icons.group_rounded, false, () => Get.to(() => const MemberPage(), transition: Transition.cupertino)),
             _buildNavIcon(Icons.history_rounded, true, () => loadData(page: 1)),
-            _buildNavIcon(CupertinoIcons.square_grid_2x2, false, () => showProfile()),
+            _buildNavIcon(CupertinoIcons.square_grid_2x2_fill, false, () => showProfile()),
           ],
         ),
       ),

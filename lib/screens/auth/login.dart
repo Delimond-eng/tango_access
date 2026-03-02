@@ -180,7 +180,7 @@ class _LoginState extends State<Login> {
                             const SizedBox(height: 40),
                             
                             const Text(
-                              "© 2024 Tango Protection. Tous droits réservés.",
+                              "© 2026 Tango Protection. Tous droits réservés.",
                               style: TextStyle(
                                 color: Colors.white70,
                                 fontSize: 10,

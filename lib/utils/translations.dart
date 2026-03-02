@@ -18,6 +18,7 @@ class AppTranslations extends Translations {
       'history': 'Historique',
       'profile': 'Profil',
       'language': 'Langue',
+      'change_language': "Changer la langue de l'appli",
       'logout': 'Déconnexion',
       'hello': 'Bonjour',
       'logout_confirm_title': 'Déconnexion',
@@ -45,6 +46,10 @@ class AppTranslations extends Translations {
       'remove_access_permanently': "Retirer l'accès définitivement",
       'validated': 'Validé',
       'visited_on': 'Visité le',
+      'please_share_qr': 'Veuillez Partager le qrcode généré.',
+      'qr_validity_note': 'La validité du QR code est limitée à la durée spécifiée.',
+      'my_qr_share_text': 'Voici mon QR Code de visite',
+      'expires_at': 'Expire le',
     },
     'en': {
       'new_visitor': 'New Visitor',
@@ -61,6 +66,7 @@ class AppTranslations extends Translations {
       'history': 'History',
       'profile': 'Profile',
       'language': 'Language',
+      'change_language': 'Change app language',
       'logout': 'Logout',
       'hello': 'Hello',
       'logout_confirm_title': 'Logout',
@@ -88,6 +94,10 @@ class AppTranslations extends Translations {
       'remove_access_permanently': 'Remove access permanently',
       'validated': 'Validated',
       'visited_on': 'Visited on',
+      'please_share_qr': 'Please Share the generated QR code.',
+      'qr_validity_note': 'The validity of the QR code is limited to the specified duration.',
+      'my_qr_share_text': 'Here is my visit QR Code',
+      'expires_at': 'Expires at',
     }
   };
 }
