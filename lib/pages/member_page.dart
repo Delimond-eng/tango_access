@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:taxenew/services/api_manager.dart';
 import 'package:taxenew/utils/controllers.dart';
 import 'package:taxenew/widgets/custom_btn.dart';
@@ -542,6 +543,60 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
+  void _showLanguageDialog() {
+    final scale = kioskScale(context);
+    final storage = GetStorage();
+    String currentLang = storage.read('lang') ?? 'fr';
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28 * scale),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('select_language'.tr, style: kioskSubtitle(context)),
+              const SizedBox(height: 20),
+              _buildLanguageOption("fr", 'french'.tr, currentLang == "fr"),
+              const SizedBox(height: 12),
+              _buildLanguageOption("en", 'english'.tr, currentLang == "en"),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String code, String label, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        Get.updateLocale(Locale(code));
+        GetStorage().write('lang', code);
+        Get.back();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? secondary.withOpacity(0.1) : Colors.grey.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? secondary : Colors.transparent),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontFamily: 'Ubuntu')),
+            if (isSelected) const Icon(Icons.check_circle, color: Colors.indigo, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSheetAction({required IconData icon, required String title, String? subtitle, required VoidCallback onTap, Color color = Colors.black87}) {
     return Container(
       decoration: BoxDecoration(
@@ -600,7 +655,9 @@ class _MemberPageState extends State<MemberPage> {
                   subtitle: Text(authController.user.value!.email, style: const TextStyle(fontFamily: 'Ubuntu')),
                 ),
                 const Divider(height: 32),
-                _buildSheetAction(icon: Icons.history, title: 'history'.tr, subtitle: 'all_validated_visits'.tr, onTap: () { Get.back(); Get.to(() => const HistoryPage(), transition: Transition.cupertino); }),
+                _buildSheetAction(icon: Icons.language_rounded, title: 'language'.tr, subtitle: "Change app language", onTap: () { Navigator.pop(sheetContext); _showLanguageDialog(); }),
+                const SizedBox(height: 12),
+                _buildSheetAction(icon: Icons.history, title: 'history'.tr, subtitle: 'all_validated_visits'.tr, onTap: () { Navigator.pop(sheetContext); Get.to(() => const HistoryPage(), transition: Transition.cupertino); }),
                 const SizedBox(height: 12),
                 _buildSheetAction(icon: Icons.logout, title: 'logout'.tr, subtitle: 'logout_confirm_desc'.tr, color: Colors.red, onTap: _showLogoutConfirmation),
               ],

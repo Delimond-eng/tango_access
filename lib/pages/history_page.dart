@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:taxenew/models/history.dart';
 import 'package:taxenew/services/api_manager.dart';
 import 'package:taxenew/theme/style.dart';
@@ -112,8 +113,8 @@ class _HistoryPageState extends State<HistoryPage> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.white.withOpacity(0.3)),
                       ),
-                      child: const KioskBrandHeader(
-                        subtitle: "Journal des passages validés",
+                      child: KioskBrandHeader(
+                        subtitle: 'all_validated_visits'.tr,
                       ),
                     ),
                   ),
@@ -129,12 +130,12 @@ class _HistoryPageState extends State<HistoryPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Historique", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Ubuntu')),
-                        Text("Tous les passages enregistrés", style: TextStyle(fontSize: 12, color: Colors.black54, fontFamily: 'Ubuntu')),
+                        Text('history'.tr, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Ubuntu')),
+                        Text('all_validated_visits'.tr, style: const TextStyle(fontSize: 12, color: Colors.black54, fontFamily: 'Ubuntu')),
                       ],
                     ),
                   ),
@@ -168,15 +169,9 @@ class _HistoryPageState extends State<HistoryPage> {
                         child: Svg(path: "history", size: 64, color: Colors.blue.shade300),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        "Historique vide",
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Ubuntu', color: Colors.black87),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        "Les passages de vos visiteurs\ns'afficheront ici.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13, color: Colors.black54, fontFamily: 'Ubuntu', height: 1.4),
+                      Text(
+                        'none_visits'.tr,
+                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Ubuntu', color: Colors.black87),
                       ),
                     ],
                   ),
@@ -295,7 +290,7 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
               const SizedBox(height: 18),
               Text(
-                "Déconnexion",
+                'logout_confirm_title'.tr,
                 style: TextStyle(
                   fontSize: 19 * scale,
                   fontWeight: FontWeight.w700,
@@ -305,7 +300,7 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Voulez-vous vraiment fermer votre session ?",
+                'logout_confirm_desc'.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13 * scale,
@@ -320,9 +315,9 @@ class _HistoryPageState extends State<HistoryPage> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Get.back(),
-                      child: const Text(
-                        "Annuler",
-                        style: TextStyle(
+                      child: Text(
+                        'cancel'.tr,
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Ubuntu',
@@ -348,9 +343,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           borderRadius: BorderRadius.circular(14 * scale),
                         ),
                       ),
-                      child: const Text(
-                        "Déconnexion",
-                        style: TextStyle(
+                      child: Text(
+                        'logout'.tr,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontFamily: 'Ubuntu',
                         ),
@@ -366,13 +361,67 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
+  void _showLanguageDialog() {
+    final scale = kioskScale(context);
+    final storage = GetStorage();
+    String currentLang = storage.read('lang') ?? 'fr';
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28 * scale),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('select_language'.tr, style: kioskSubtitle(context)),
+              const SizedBox(height: 20),
+              _buildLanguageOption("fr", 'french'.tr, currentLang == "fr"),
+              const SizedBox(height: 12),
+              _buildLanguageOption("en", 'english'.tr, currentLang == "en"),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String code, String label, bool isSelected) {
+    return InkWell(
+      onTap: () {
+        Get.updateLocale(Locale(code));
+        GetStorage().write('lang', code);
+        Get.back();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? secondary.withOpacity(0.1) : Colors.grey.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? secondary : Colors.transparent),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontFamily: 'Ubuntu')),
+            if (isSelected) const Icon(Icons.check_circle, color: Colors.indigo, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   void showProfile() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -395,13 +444,15 @@ class _HistoryPageState extends State<HistoryPage> {
                       style: TextStyle(color: secondary, fontWeight: FontWeight.bold)
                     )
                   ),
-                  title: Text("Bonjour, ${authController.user.value!.nom}", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Ubuntu', fontSize: 18)),
+                  title: Text("${'hello'.tr}, ${authController.user.value!.nom}", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Ubuntu', fontSize: 18)),
                   subtitle: Text(authController.user.value!.email, style: const TextStyle(fontFamily: 'Ubuntu')),
                 ),
                 const Divider(height: 32),
-                _buildSheetAction(icon: Icons.group, title: "Mes membres", subtitle: "Gérer famille et employés", onTap: () { Get.back(); Get.to(() => const MemberPage(), transition: Transition.cupertino); }),
+                _buildSheetAction(icon: Icons.language_rounded, title: 'language'.tr, subtitle: "Change app language", onTap: () { Navigator.pop(sheetContext); _showLanguageDialog(); }),
                 const SizedBox(height: 12),
-                _buildSheetAction(icon: Icons.logout, title: "Déconnexion", subtitle: "Fermer votre session actuelle", color: Colors.red, onTap: _showLogoutConfirmation),
+                _buildSheetAction(icon: Icons.group, title: 'members'.tr, subtitle: 'permanent_members'.tr, onTap: () { Navigator.pop(sheetContext); Get.to(() => const MemberPage(), transition: Transition.cupertino); }),
+                const SizedBox(height: 12),
+                _buildSheetAction(icon: Icons.logout, title: 'logout'.tr, subtitle: 'logout_confirm_desc'.tr, color: Colors.red, onTap: _showLogoutConfirmation),
               ],
             ),
           ),
