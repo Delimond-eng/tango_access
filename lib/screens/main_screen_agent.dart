@@ -485,22 +485,6 @@ class _MainScreenAgentState extends State<MainScreenAgent> with WidgetsBindingOb
                   ),
                   const SizedBox(height: 12),
                   _buildActionItem(
-                    icon: Icons.group_rounded,
-                    title: "Mes membres",
-                    subtitle: "Gérer famille et employés",
-                    color: Colors.blue.shade700,
-                    onTap: () {
-                      Get.back();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MemberPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _buildActionItem(
                     icon: Icons.logout_rounded,
                     title: "Déconnexion",
                     subtitle: "Fermer votre session actuelle",
