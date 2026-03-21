@@ -14,7 +14,6 @@ import '../models/qrcode.dart';
 import '../widgets/visitor_card.dart';
 import '/theme/style.dart';
 
-
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -50,10 +49,23 @@ class _MainScreenState extends State<MainScreen> {
   // --- LOGIQUE DE CRÉATION VIA BOTTOM SHEET ---
   void _showCreationBottomSheet(String type) {
     final TextEditingController nomController = TextEditingController();
-    final TextEditingController phoneController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
+    final TextEditingController plateController = TextEditingController();
+    final TextEditingController noteController = TextEditingController();
+    final TextEditingController personCountController = TextEditingController(text: "1");
+
+    String arrivalMode = "foot"; // foot, car, taxi
+    List<String> selectedTags = [];
     DateTime? selectedDate;
     String dateTimeVisite = "";
+
+    final List<Map<String, dynamic>> quickTags = [
+      {"id": "delivery", "label": 'delivery'.tr, "icon": Icons.inventory_2_outlined},
+      {"id": "work", "label": 'work'.tr, "icon": Icons.handyman_outlined},
+      {"id": "reunion", "label": 'reunion'.tr, "icon": Icons.groups_outlined},
+      {"id": "family", "label": 'family'.tr, "icon": Icons.favorite_border},
+      {"id": "urgent", "label": 'urgent'.tr, "icon": Icons.notification_important_outlined},
+      {"id": "other", "label": 'other'.tr, "icon": Icons.more_horiz_outlined},
+    ];
 
     showModalBottomSheet(
       context: context,
@@ -61,124 +73,243 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: Colors.transparent,
       useSafeArea: true,
       builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setInternalState) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-                left: 20,
-                right: 20,
-                top: 12,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 5,
-                    margin: const EdgeInsets.only(bottom: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+        builder: (context, setInternalState) {
+          Widget buildModeItem(String id, String label, IconData icon) {
+            bool isSelected = arrivalMode == id;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setInternalState(() => arrivalMode = id),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? primaryColor : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: isSelected ? primaryColor : Colors.grey.shade300),
                   ),
-                  Text(
-                    type == 'visitor' ? 'new_visitor'.tr : 'new_member'.tr,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Ubuntu'),
-                  ),
-                  const SizedBox(height: 20),
-                  CustomField(
-                    controller: nomController,
-                    hintText: 'full_name'.tr,
-                    iconPath: 'user-1',
-                  ),
-                  CustomField(
-                    controller: phoneController,
-                    hintText: 'phone'.tr,
-                    inputType: TextInputType.phone,
-                    iconPath: 'phone-2',
-                  ),
-                  CustomField(
-                    controller: emailController,
-                    hintText: 'email_optional'.tr,
-                    inputType: TextInputType.emailAddress,
-                    iconPath: 'email',
-                  ),
-                  if (type == "visitor")
-                    CustomDateTimeField(
-                      hintText: 'visit_date_time'.tr,
-                      iconPath: "calendar-time",
-                      selectedDateTime: selectedDate,
-                      onChanged: (DateTime dt) {
-                        setInternalState(() {
-                          selectedDate = dt;
-                          dateTimeVisite = DateFormat('yyyy-MM-dd HH:mm').format(dt);
-                        });
-                      },
-                    ),
-                  const SizedBox(height: 24),
-                  Obx(() => SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: secondary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
+                  child: Column(
+                    children: [
+                      Icon(icon, color: isSelected ? Colors.white : Colors.grey.shade600, size: 20),
+                      const SizedBox(height: 4),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : Colors.grey.shade600,
+                        ),
                       ),
-                      onPressed: dataController.isLoading.value ? null : () async {
-                        if (nomController.text.isEmpty) {
-                          EasyLoading.showToast("Le nom est requis.");
-                          return;
-                        }
-                        if (type == "visitor" && dateTimeVisite.isEmpty) {
-                          EasyLoading.showToast("La date est requise.");
-                          return;
-                        }
-                        var api = ApiManager();
-                        final res = await api.createVisitor(
-                          name: nomController.text,
-                          dateTime: dateTimeVisite,
-                          type: type,
-                          phone: phoneController.text,
-                          email: emailController.text,
-                        );
-                        if (res is String) {
-                          EasyLoading.showInfo(res);
-                        } else {
-                          if (!mounted) return;
-                          Navigator.pop(sheetContext);
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            useSafeArea: true,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                            ),
-                            builder: (context) => QrcodeBottomSheet(
-                              qrData: res["qrcode"],
-                              visitorName: res["visitor"]["name"],
-                            ),
-                          );
-                        }
-                      },
-                      child: dataController.isLoading.value
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Text('generate_qr'.tr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                  left: 20,
+                  right: 20,
+                  top: 12,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        margin: const EdgeInsets.only(bottom: 24),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                     ),
-                  )),
-                ],
+                    Center(
+                      child: Text(
+                        type == 'visitor' ? 'new_visitor'.tr : 'new_member'.tr,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, fontFamily: 'Ubuntu'),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    CustomField(
+                      controller: nomController,
+                      hintText: 'full_name'.tr,
+                      iconPath: 'user-1',
+                    ),
+                    if (type == "visitor") ...[
+                      CustomDateTimeField(
+                        hintText: 'visit_date_time'.tr,
+                        iconPath: "calendar-time",
+                        selectedDateTime: selectedDate,
+                        onChanged: (DateTime dt) {
+                          setInternalState(() {
+                            selectedDate = dt;
+                            dateTimeVisite = DateFormat('yyyy-MM-dd HH:mm').format(dt);
+                          });
+                        },
+                      ),
+                      
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'number_of_persons'.tr,
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 120,
+                            child: CustomField(
+                              controller: personCountController,
+                              hintText: "1",
+                              iconPath: 'user',
+                              inputType: TextInputType.number,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 15),
+                      Text('arrival_mode'.tr, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13)),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          buildModeItem("foot", 'foot'.tr, Icons.directions_walk),
+                          const SizedBox(width: 8),
+                          buildModeItem("car", 'car'.tr, Icons.directions_car),
+                          const SizedBox(width: 8),
+                          buildModeItem("taxi", 'taxi'.tr, Icons.local_taxi),
+                        ],
+                      ),
+                      
+                      if (arrivalMode != "foot") ...[
+                        const SizedBox(height: 15),
+                        CustomField(
+                          controller: plateController, 
+                          hintText: 'plate_hint'.tr, 
+                          iconPath: 'settings-2'
+                        ),
+                      ],
+  
+                      const SizedBox(height: 20),
+                      Text('precisions'.tr, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13)),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 0,
+                        children: quickTags.map((tag) {
+                          bool isSelected = selectedTags.contains(tag["id"]);
+                          return FilterChip(
+                            label: Text(tag["label"]),
+                            avatar: Icon(tag["icon"], size: 14, color: isSelected ? Colors.white : primaryColor),
+                            selected: isSelected,
+                            onSelected: (bool value) {
+                              setInternalState(() {
+                                if (value) {
+                                  selectedTags.add(tag["id"]);
+                                } else {
+                                  selectedTags.remove(tag["id"]);
+                                }
+                              });
+                            },
+                            selectedColor: primaryColor,
+                            checkmarkColor: Colors.white,
+                            labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontSize: 11),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                          );
+                        }).toList(),
+                      ),
+  
+                      const SizedBox(height: 15),
+                      CustomField(
+                        controller: noteController, 
+                        hintText: 'note_instruction'.tr, 
+                        iconPath: 'email'
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+                    Obx(() => SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: secondary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 0,
+                        ),
+                        onPressed: dataController.isLoading.value ? null : () async {
+                          if (nomController.text.isEmpty) {
+                            EasyLoading.showToast('name_required'.tr);
+                            return;
+                          }
+                          if (type == "visitor" && dateTimeVisite.isEmpty) {
+                            EasyLoading.showToast('date_required'.tr);
+                            return;
+                          }
+
+                          Map<String, dynamic>? specs;
+                          if (type == "visitor") {
+                            specs = {
+                              "mode": arrivalMode,
+                              "plate": plateController.text.isNotEmpty ? plateController.text : null,
+                              "tags": selectedTags,
+                              "note": noteController.text.isNotEmpty ? noteController.text : null,
+                              "person_count": int.tryParse(personCountController.text) ?? 1,
+                            };
+                          }
+
+                          var api = ApiManager();
+                          final res = await api.createVisitor(
+                            name: nomController.text,
+                            dateTime: dateTimeVisite,
+                            type: type,
+                            specifications: specs,
+                          );
+                          if (res is String) {
+                            EasyLoading.showInfo(res);
+                          } else {
+                            if (!mounted) return;
+                            Navigator.pop(sheetContext);
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              useSafeArea: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                              ),
+                              builder: (context) => QrcodeBottomSheet(
+                                qrData: res["qrcode"],
+                                visitorName: res["visitor"]["name"],
+                                specs: specs,
+                              ),
+                            );
+                          }
+                        },
+                        child: dataController.isLoading.value
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : Text('generate_qr'.tr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ),
+                    )),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }
       ),
     );
   }

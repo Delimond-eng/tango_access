@@ -49,6 +49,7 @@ class ApiManager {
     required String type,
     String? phone,
     String? email,
+    Map<String, dynamic>? specifications,
   }) async {
     try {
       dataController.isLoading.value = true;
@@ -63,6 +64,7 @@ class ApiManager {
           "email": email,
           "type": type,
           "resident_id": user!.id,
+          "specifications": specifications,
         },
       );
       dataController.isLoading.value = false;

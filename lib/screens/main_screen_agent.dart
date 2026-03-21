@@ -7,8 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:taxenew/pages/member_page.dart';
-import 'package:taxenew/services/api_manager.dart';
+import '/pages/member_page.dart';
+import '/services/api_manager.dart';
 import '../components/kiosk_components.dart';
 import '../pages/history_page.dart';
 import '../utils/controllers.dart';
@@ -75,6 +75,15 @@ class _MainScreenAgentState extends State<MainScreenAgent> with WidgetsBindingOb
       if (res is Map && res.containsKey("qrcode")) {
         bool expired = res["status"] != "accepted";
         
+        Map<String, dynamic>? specs;
+        if (res["qrcode"]["specifications"] != null) {
+           try {
+             specs = Map<String, dynamic>.from(res["qrcode"]["specifications"]);
+           } catch(e) {
+             print("Erreur parsing specs: $e");
+           }
+        }
+
         showScanInfos(
           qrcode: res["qrcode"]["token"],
           valideTo: res["qrcode"]["valid_to"] ?? "",
@@ -83,6 +92,7 @@ class _MainScreenAgentState extends State<MainScreenAgent> with WidgetsBindingOb
           unit: res["qrcode"]["unit"]?['name'] ?? "N/A",
           isExpired: expired,
           errorMessage: expired ? (res["message"] ?? "Ce QR code est expiré ou déjà utilisé.") : null,
+          specifications: specs,
         );
       } else {
         dataController.isScanned.value = false;
@@ -666,6 +676,7 @@ class _MainScreenAgentState extends State<MainScreenAgent> with WidgetsBindingOb
     required String unit,
     bool isExpired = false,
     String? errorMessage,
+    Map<String, dynamic>? specifications,
   }) {
     showDialog(
       context: context,
@@ -678,6 +689,7 @@ class _MainScreenAgentState extends State<MainScreenAgent> with WidgetsBindingOb
         unit: unit,
         isExpired: isExpired,
         errorMessage: errorMessage,
+        specifications: specifications,
         onCancel: () {
           Navigator.pop(context);
         },
@@ -698,6 +710,7 @@ class QrModal extends StatelessWidget {
   final String unit;
   final bool isExpired;
   final String? errorMessage;
+  final Map<String, dynamic>? specifications;
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
 
@@ -712,6 +725,7 @@ class QrModal extends StatelessWidget {
     required this.onCancel,
     this.isExpired = false,
     this.errorMessage,
+    this.specifications,
   });
 
   @override
@@ -719,176 +733,285 @@ class QrModal extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: (isExpired ? Colors.red : Colors.green).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  isExpired ? Icons.error_outline_rounded : Icons.verified_rounded,
-                  color: isExpired ? Colors.red : Colors.green.shade700,
-                  size: 32,
-                ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
-              const SizedBox(height: 16),
-              Text(
-                isExpired ? "QR Code Invalide" : "Vérification validée",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isExpired ? Colors.red : secondary,
-                  fontWeight: FontWeight.w800,
-                  fontFamily: 'Ubuntu',
-                  fontSize: 20,
-                ),
-              ),
-              if (isExpired && errorMessage != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  errorMessage!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    fontFamily: 'Ubuntu',
-                  ),
-                ),
-              ],
-              
-              if (!isExpired) ...[
-                const SizedBox(height: 20),
+            ],
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    color: Colors.grey.shade50,
-                    border: Border.all(color: Colors.grey.shade200),
+                    color: (isExpired ? Colors.red : Colors.green).withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
-                  child: QrImageView(
-                    data: qrData,
-                    size: 142,
-                    backgroundColor: Colors.white,
-                    embeddedImage: const AssetImage("assets/images/tango.png"),
-                    embeddedImageStyle: const QrEmbeddedImageStyle(
-                      size: Size(34, 34),
-                    ),
+                  child: Icon(
+                    isExpired ? Icons.error_outline_rounded : Icons.verified_rounded,
+                    color: isExpired ? Colors.red : Colors.green.shade700,
+                    size: 32,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  visitorName.toUpperCase(),
+                  isExpired ? "QR Code Invalide" : "Vérification validée",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: secondary,
-                    fontSize: 18,
-                    fontFamily: 'Ubuntu',
+                    color: isExpired ? Colors.red : secondary,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.4,
+                    fontFamily: 'Ubuntu',
+                    fontSize: 20,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF7F8FC),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.grey.shade200),
+                if (isExpired && errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      fontFamily: 'Ubuntu',
+                    ),
                   ),
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
+                ],
+                
+                if (!isExpired) ...[
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      color: Colors.grey.shade50,
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: QrImageView(
+                      data: qrData,
+                      size: 142,
+                      backgroundColor: Colors.white,
+                      embeddedImage: const AssetImage("assets/images/tango.png"),
+                      embeddedImageStyle: const QrEmbeddedImageStyle(
+                        size: Size(34, 34),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    visitorName.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: secondary,
+                      fontSize: 18,
+                      fontFamily: 'Ubuntu',
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF7F8FC),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      children: [
+                        _ScanInfoTile(
+                          icon: Icons.person_rounded,
+                          label: "Résident visité",
+                          value: resident,
+                        ),
+                        const SizedBox(height: 12),
+                        _ScanInfoTile(
+                          icon: Icons.apartment_rounded,
+                          label: "Appartement / Box",
+                          value: unit,
+                        ),
+                        const SizedBox(height: 12),
+                        _ScanInfoTile(
+                          icon: Icons.event_available_rounded,
+                          label: "Horaire prévu",
+                          value: dateTime.isEmpty ? "Accès permanent" : dateTime,
+                        ),
+                        if (specifications != null) ...[
+                          const Divider(height: 24),
+                          // Mode d'arrivée
+                          _buildSpecItem(
+                            icon: _getModeIcon(specifications!["mode"]),
+                            label: "Mode d'arrivée",
+                            value: _getModeLabel(specifications!["mode"]),
+                          ),
+                          
+                          // Plaque si présente
+                          if (specifications!["plate"] != null) ...[
+                            const SizedBox(height: 12),
+                            _buildSpecItem(
+                              icon: Icons.confirmation_number_outlined,
+                              label: "Plaque",
+                              value: specifications!["plate"],
+                            ),
+                          ],
+                          
+                          // Tags (Livraison, Travaux, etc)
+                          if (specifications!["tags"] != null && (specifications!["tags"] as List).isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                             _buildTags(specifications!["tags"]),
+                          ],
+          
+                          // Note finale
+                          if (specifications!["note"] != null) ...[
+                             const SizedBox(height: 12),
+                             _buildSpecItem(
+                              icon: Icons.notes,
+                              label: "Note particulière",
+                              value: specifications!["note"],
+                              isLongText: true,
+                            ),
+                          ]
+                        ]
+                      ],
+                    ),
+                  ),
+                ],
+                
+                const SizedBox(height: 28),
+                
+                if (isExpired)
+                  SizedBox(
+                    width: 140, 
+                    child: ElevatedButton(
+                      onPressed: onCancel,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black87,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text("Fermer", style: TextStyle(fontFamily: 'Ubuntu', fontWeight: FontWeight.bold)),
+                    ),
+                  )
+                else
+                  Row(
                     children: [
-                      _ScanInfoTile(
-                        icon: Icons.person_rounded,
-                        label: "Résident visité",
-                        value: resident,
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: onCancel,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            side: BorderSide(color: secondary.withOpacity(0.3)),
+                          ),
+                          child: Text("Annuler", style: TextStyle(color: secondary, fontFamily: 'Ubuntu')),
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      _ScanInfoTile(
-                        icon: Icons.apartment_rounded,
-                        label: "Appartement / Box",
-                        value: unit,
-                      ),
-                      const SizedBox(height: 12),
-                      _ScanInfoTile(
-                        icon: Icons.event_available_rounded,
-                        label: "Horaire prévu",
-                        value: dateTime.isEmpty ? "Accès permanent" : dateTime,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: onConfirm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: secondary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: const Text("Valider", style: TextStyle(fontFamily: 'Ubuntu', fontWeight: FontWeight.bold)),
+                        ),
                       ),
                     ],
                   ),
-                ),
               ],
-              
-              const SizedBox(height: 28),
-              
-              if (isExpired)
-                SizedBox(
-                  width: 140, 
-                  child: ElevatedButton(
-                    onPressed: onCancel,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black87,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: const Text("Fermer", style: TextStyle(fontFamily: 'Ubuntu', fontWeight: FontWeight.bold)),
-                  ),
-                )
-              else
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: onCancel,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          side: BorderSide(color: secondary.withOpacity(0.3)),
-                        ),
-                        child: Text("Annuler", style: TextStyle(color: secondary, fontFamily: 'Ubuntu')),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: onConfirm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: secondary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
-                        ),
-                        child: const Text("Valider", style: TextStyle(fontFamily: 'Ubuntu', fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildSpecItem({required IconData icon, required String label, required String value, bool isLongText = false}) {
+    return Row(
+      crossAxisAlignment: isLongText ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      children: [
+        Icon(icon, size: 18, color: primaryColor),
+        const SizedBox(width: 8),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 13, color: Colors.black87, fontFamily: 'Ubuntu'),
+              children: [
+                TextSpan(text: "$label: ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                TextSpan(text: value),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTags(List tags) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: tags.map((tag) {
+        String label = _getTagLabel(tag);
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: primaryColor.withOpacity(0.3)),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryColor),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  IconData _getModeIcon(String? mode) {
+    switch (mode) {
+      case "car": return Icons.directions_car;
+      case "taxi": return Icons.local_taxi;
+      default: return Icons.directions_walk;
+    }
+  }
+
+  String _getModeLabel(String? mode) {
+    switch (mode) {
+      case "car": return "Voiture";
+      case "taxi": return "Taxi/VTC";
+      default: return "À pied";
+    }
+  }
+
+  String _getTagLabel(String id) {
+    switch (id) {
+      case "delivery": return "LIVRAISON";
+      case "work": return "TRAVAUX";
+      case "heavy": return "COLIS LOURD";
+      case "family": return "FAMILLE";
+      case "urgent": return "URGENT";
+      default: return id.toUpperCase();
+    }
   }
 }
 
@@ -979,9 +1102,9 @@ class ScannerControl extends StatelessWidget {
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
               child: Icon(
                 icon,
                 size: 28 * scale,

@@ -7,16 +7,18 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:taxenew/utils/app_theme.dart';
+import 'package:taxenew/theme/style.dart';
 
 class QrcodeBottomSheet extends StatelessWidget {
-  final String qrData; // url ou token
-  final String visitorName; 
+  final String qrData;
+  final String visitorName;
+  final Map<String, dynamic>? specs;
 
   const QrcodeBottomSheet({
     super.key,
     required this.qrData,
     required this.visitorName,
+    this.specs,
   });
 
   @override
@@ -38,18 +40,17 @@ class QrcodeBottomSheet extends StatelessWidget {
 
         await Share.shareXFiles([
           XFile(file.path),
-        ], text: 'my_qr_share_text'.tr);
+        ], text: 'Voici le pass d\'accès pour $visitorName');
       } catch (e) {
         print("Erreur partage QR: $e");
       }
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
-      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       child: SafeArea(
         top: false,
@@ -57,80 +58,92 @@ class QrcodeBottomSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 5,
-              margin: const EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(5),
-              ),
+              width: 40, height: 5,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(5)),
             ),
-            Text(
-              "please_share_qr".tr,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+            const Text(
+              "Pass d'accès généré",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.indigo),
             ),
-            Text(
-              "qr_validity_note".tr,
-              style: const TextStyle(fontSize: 10),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             RepaintBoundary(
               key: globalKey,
-              child: QrImageView(
-                data: qrData,
-                size: 200,
-                backgroundColor: Colors.white,
-                embeddedImage: const AssetImage("assets/images/tango.png"),
-                embeddedImageStyle: const QrEmbeddedImageStyle(
-                  size: Size(40, 40),
-                ),
-              ),
-            ),
-            Text(
-              visitorName,
-              style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.w800),
-            ).paddingTop(8.0),
-            const SizedBox(height: 20),
-        
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(60.0),
-                border: Border.all(color: Colors.blue, width: 2.0),
-              ),
               child: Container(
-                height: 60.0,
-                width: 60.0,
-                margin: const EdgeInsets.all(2.0),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(60.0),
-                  gradient: const LinearGradient(
-                    colors: [Colors.indigo, Colors.blue],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade100),
                 ),
-                child: Material(
-                  borderRadius: BorderRadius.circular(60.0),
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(60.0),
-                    onTap: shareQrCode,
-                    child: const Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Icon(Icons.share, color: Colors.white)],
+                child: Column(
+                  children: [
+                    QrImageView(
+                      data: qrData,
+                      size: 180,
+                      backgroundColor: Colors.white,
+                      embeddedImage: const AssetImage("assets/images/tango.png"),
+                      embeddedImageStyle: const QrEmbeddedImageStyle(size: Size(35, 35)),
                     ),
-                  ),
+                    const SizedBox(height: 10),
+                    Text(
+                      visitorName.toUpperCase(),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                    ),
+                    if (specs != null) ...[
+                       const SizedBox(height: 8),
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         children: [
+                           Icon(_getModeIcon(specs!["mode"]), size: 14, color: Colors.grey),
+                           const SizedBox(width: 5),
+                           Text(
+                             _getModeLabel(specs!["mode"]),
+                             style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
+                           ),
+                         ],
+                       ),
+                    ]
+                  ],
                 ),
               ),
             ),
-        
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                onPressed: shareQrCode,
+                icon: const Icon(Icons.share, color: Colors.white),
+                label: const Text("PARTAGER LE PASS", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  elevation: 0,
+                ),
+              ),
+            ),
             const SizedBox(height: 10),
           ],
         ),
       ),
     );
+  }
+
+  IconData _getModeIcon(String? mode) {
+    switch (mode) {
+      case "car": return Icons.directions_car;
+      case "taxi": return Icons.local_taxi;
+      default: return Icons.directions_walk;
+    }
+  }
+
+  String _getModeLabel(String? mode) {
+    switch (mode) {
+      case "car": return "En Voiture";
+      case "taxi": return "En Taxi";
+      default: return "À pied";
+    }
   }
 }
